@@ -81,5 +81,17 @@ namespace Order.Data
 
             return order;
         }
+
+        public async Task UpdateOrderStatusAsync(Guid orderId, Guid statusId)
+        {
+            var order = await _orderContext.Order.SingleAsync(x => x.Id == orderId.ToByteArray());
+            order.StatusId = statusId.ToByteArray();
+            await _orderContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> OrderExistsAsync(Guid orderId)
+        {
+            return await _orderContext.Order.AnyAsync(x => x.Id == orderId.ToByteArray());
+        }
     }
 }

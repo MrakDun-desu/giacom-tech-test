@@ -26,5 +26,15 @@ namespace Order.Service
             var order = await _orderRepository.GetOrderByIdAsync(orderId);
             return order;
         }
+
+        public async Task UpdateOrderStatusAsync(Guid orderId, Guid statusId)
+        {
+            await _orderRepository.UpdateOrderStatusAsync(orderId, statusId);
+        }
+
+        public async Task<bool> OrderExistsAsync(Guid orderId)
+        {
+            return await _orderRepository.OrderExistsAsync(orderId);
+        }
     }
 }
