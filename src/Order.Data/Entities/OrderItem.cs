@@ -1,11 +1,13 @@
-﻿namespace Order.Data.Entities
+﻿using System;
+
+namespace Order.Data.Entities
 {
     public partial class OrderItem
     {
-        public byte[] Id { get; set; }
-        public byte[] OrderId { get; set; }
-        public byte[] ProductId { get; set; }
-        public byte[] ServiceId { get; set; }
+        public Guid Id { get; set; }
+        public Guid OrderId { get; set; }
+        public Guid ProductId { get; set; }
+        public Guid ServiceId { get; set; }
         public int? Quantity { get; set; }
 
         public virtual Order Order { get; set; }

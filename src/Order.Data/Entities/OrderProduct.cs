@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Order.Data.Entities
 {
@@ -9,8 +10,8 @@ namespace Order.Data.Entities
             OrderItem = new HashSet<OrderItem>();
         }
 
-        public byte[] Id { get; set; }
-        public byte[] ServiceId { get; set; }
+        public Guid Id { get; set; }
+        public Guid ServiceId { get; set; }
         public string Name { get; set; }
         public decimal UnitCost { get; set; }
         public decimal UnitPrice { get; set; }

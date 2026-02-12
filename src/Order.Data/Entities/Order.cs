@@ -10,10 +10,10 @@ namespace Order.Data.Entities
             Items = new HashSet<OrderItem>();
         }
 
-        public byte[] Id { get; set; }
-        public byte[] ResellerId { get; set; }
-        public byte[] CustomerId { get; set; }
-        public byte[] StatusId { get; set; }
+        public Guid Id { get; set; }
+        public Guid ResellerId { get; set; }
+        public Guid CustomerId { get; set; }
+        public Guid StatusId { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public virtual OrderStatus Status { get; set; }

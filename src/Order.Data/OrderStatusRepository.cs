@@ -15,7 +15,7 @@ namespace Order.Data
 
         public Task<bool> OrderStatusExistsAsync(Guid orderStatusId)
         {
-            return _orderContext.OrderStatus.AnyAsync(x => x.Id == orderStatusId.ToByteArray());
+            return _orderContext.OrderStatus.AnyAsync(x => x.Id == orderStatusId);
         }
     }
 }

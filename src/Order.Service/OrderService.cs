@@ -15,7 +15,7 @@ namespace Order.Service
             _orderRepository = orderRepository;
         }
 
-        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName)
+        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName = null)
         {
             var orders = await _orderRepository.GetOrdersAsync(statusName);
             return orders;
@@ -35,6 +35,11 @@ namespace Order.Service
         public async Task<bool> OrderExistsAsync(Guid orderId)
         {
             return await _orderRepository.OrderExistsAsync(orderId);
+        }
+
+        public async Task<OrderDetail> CreateOrderAsync(OrderCreateRequest createRequest)
+        {
+            return await _orderRepository.CreateOrderAsync(createRequest);
         }
     }
 }

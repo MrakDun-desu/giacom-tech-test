@@ -31,8 +31,10 @@ namespace OrderService.WebAPI
 
             services.AddScoped<IOrderService, Order.Service.OrderService>();
             services.AddScoped<IOrderStatusService, Order.Service.OrderStatusService>();
+            services.AddScoped<IOrderProductService, Order.Service.OrderProductService>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IOrderStatusRepository, OrderStatusRepository>();
+            services.AddScoped<IOrderProductRepository, OrderProductRepository>();
 
             services.AddControllers();
         }

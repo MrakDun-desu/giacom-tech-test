@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using OrderEntity = Order.Data.Entities.Order;
+using OrderItemEntity = Order.Data.Entities.OrderItem;
 
 namespace Order.Data
 {
@@ -16,7 +18,7 @@ namespace Order.Data
             _orderContext = orderContext;
         }
 
-        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName)
+        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName = null)
         {
             var ordersQuery = _orderContext.Order
                 .Include(x => x.Items)
@@ -31,10 +33,10 @@ namespace Order.Data
             var orders = await ordersQuery
                 .Select(x => new OrderSummary
                 {
-                    Id = new Guid(x.Id),
-                    ResellerId = new Guid(x.ResellerId),
-                    CustomerId = new Guid(x.CustomerId),
-                    StatusId = new Guid(x.StatusId),
+                    Id = x.Id,
+                    ResellerId = x.ResellerId,
+                    CustomerId = x.CustomerId,
+                    StatusId = x.StatusId,
                     StatusName = x.Status.Name,
                     ItemCount = x.Items.Count,
                     TotalCost = x.Items.Sum(i => i.Quantity * i.Product.UnitCost).Value,
@@ -49,27 +51,25 @@ namespace Order.Data
 
         public async Task<OrderDetail> GetOrderByIdAsync(Guid orderId)
         {
-            var orderIdBytes = orderId.ToByteArray();
-
             var order = await _orderContext.Order
-                .Where(x => _orderContext.Database.IsInMemory() ? x.Id.SequenceEqual(orderIdBytes) : x.Id == orderIdBytes)
+                .Where(x => x.Id == orderId)
                 .Select(x => new OrderDetail
                 {
-                    Id = new Guid(x.Id),
-                    ResellerId = new Guid(x.ResellerId),
-                    CustomerId = new Guid(x.CustomerId),
-                    StatusId = new Guid(x.StatusId),
+                    Id = x.Id,
+                    ResellerId = x.ResellerId,
+                    CustomerId = x.CustomerId,
+                    StatusId = x.StatusId,
                     StatusName = x.Status.Name,
                     CreatedDate = x.CreatedDate,
                     TotalCost = x.Items.Sum(i => i.Quantity * i.Product.UnitCost).Value,
                     TotalPrice = x.Items.Sum(i => i.Quantity * i.Product.UnitPrice).Value,
                     Items = x.Items.Select(i => new Model.OrderItem
                     {
-                        Id = new Guid(i.Id),
-                        OrderId = new Guid(i.OrderId),
-                        ServiceId = new Guid(i.ServiceId),
+                        Id = i.Id,
+                        OrderId = i.OrderId,
+                        ServiceId = i.ServiceId,
                         ServiceName = i.Service.Name,
-                        ProductId = new Guid(i.ProductId),
+                        ProductId = i.ProductId,
                         ProductName = i.Product.Name,
                         UnitCost = i.Product.UnitCost,
                         UnitPrice = i.Product.UnitPrice,
@@ -84,14 +84,54 @@ namespace Order.Data
 
         public async Task UpdateOrderStatusAsync(Guid orderId, Guid statusId)
         {
-            var order = await _orderContext.Order.SingleAsync(x => x.Id == orderId.ToByteArray());
-            order.StatusId = statusId.ToByteArray();
+            var order = await _orderContext.Order.SingleAsync(x => x.Id == orderId);
+            order.StatusId = statusId;
             await _orderContext.SaveChangesAsync();
         }
 
         public async Task<bool> OrderExistsAsync(Guid orderId)
         {
-            return await _orderContext.Order.AnyAsync(x => x.Id == orderId.ToByteArray());
+            return await _orderContext.Order.AnyAsync(x => x.Id == orderId);
+        }
+
+        public async Task<OrderDetail> CreateOrderAsync(OrderCreateRequest request)
+        {
+            // honestly not really sure why service IDs are stored in the order item table as well,
+            // I would expect the services to be directly linked to the products. This would be
+            // better to discuss with management in a real-world scenario
+            //
+            // Similarly to before, running this through foreach because the better SQL "IN" syntax
+            // doesn't seem to be available here for .Contains method
+            var productServiceIds = new Dictionary<Guid, Guid>();
+            foreach (var item in request.Items)
+            {
+                var serviceId = await _orderContext.OrderProduct
+                    .Where(x => x.Id == item.ProductId)
+                    .Select(x => x.ServiceId)
+                    .SingleAsync();
+                productServiceIds[item.ProductId] = serviceId;
+            }
+            var newOrder = new OrderEntity
+            {
+                Id = Guid.NewGuid(),
+                StatusId = request.StatusId,
+                ResellerId = request.ResellerId,
+                CustomerId = request.CustomerId,
+                Items = request.Items.Select(x => new OrderItemEntity
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    ServiceId = productServiceIds[x.ProductId]
+                }).ToHashSet(),
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _orderContext.Order.Add(newOrder);
+
+            await _orderContext.SaveChangesAsync();
+
+            return await GetOrderByIdAsync(newOrder.Id);
         }
     }
 }
