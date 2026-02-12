@@ -16,11 +16,19 @@ namespace Order.Data
             _orderContext = orderContext;
         }
 
-        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync()
+        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName)
         {
-            var orders = await _orderContext.Order
+            var ordersQuery = _orderContext.Order
                 .Include(x => x.Items)
                 .Include(x => x.Status)
+                .AsQueryable();
+
+            if (statusName is not null)
+            {
+                ordersQuery = ordersQuery.Where(x => x.Status.Name == statusName);
+            }
+
+            var orders = await ordersQuery
                 .Select(x => new OrderSummary
                 {
                     Id = new Guid(x.Id),
@@ -70,7 +78,7 @@ namespace Order.Data
                         Quantity = i.Quantity.Value
                     })
                 }).SingleOrDefaultAsync();
-            
+
             return order;
         }
     }

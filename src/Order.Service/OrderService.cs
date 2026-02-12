@@ -15,9 +15,9 @@ namespace Order.Service
             _orderRepository = orderRepository;
         }
 
-        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync()
+        public async Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName)
         {
-            var orders = await _orderRepository.GetOrdersAsync();
+            var orders = await _orderRepository.GetOrdersAsync(statusName);
             return orders;
         }
 

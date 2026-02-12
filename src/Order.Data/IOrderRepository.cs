@@ -7,7 +7,7 @@ namespace Order.Data
 {
     public interface IOrderRepository
     {
-        Task<IEnumerable<OrderSummary>> GetOrdersAsync();
+        Task<IEnumerable<OrderSummary>> GetOrdersAsync(string statusName);
 
         Task<OrderDetail> GetOrderByIdAsync(Guid orderId);
     }
