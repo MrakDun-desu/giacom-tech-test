@@ -131,7 +131,8 @@ namespace OrderService.WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProfitByMonth()
         {
-            throw new NotImplementedException();
+            var profitSummary = await _orderService.GetProfitSummary();
+            return Ok(profitSummary);
         }
     }
 }

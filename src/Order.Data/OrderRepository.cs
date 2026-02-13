@@ -133,5 +133,38 @@ namespace Order.Data
 
             return await GetOrderByIdAsync(newOrder.Id);
         }
+
+        public async Task<IEnumerable<ProfitSummary>> GetProfitSummary()
+        {
+            var orderProfits = await _orderContext.Order
+                .Include(x => x.Status)
+                .Where(x => x.Status.Name == "Completed")
+                .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
+                .Select(x => new
+                {
+                    x.CreatedDate,
+                    Profit = x.Items.Sum(i => (i.Quantity ?? 0) * (i.Product.UnitPrice - i.Product.UnitCost))
+                })
+            .ToArrayAsync();
+
+            // Need to split the query here and compute the actual monthly profits on the API.
+            // The database should be able to handle this as a joint query, but the current provider
+            // doesn't seem to translate it correctly (maybe due to old DB version?)
+            var monthlyProfits = orderProfits
+                .GroupBy(x => new
+                {
+                    x.CreatedDate.Year,
+                    x.CreatedDate.Month
+                })
+                .Select(g => new ProfitSummary
+                {
+                    Period = new DateTime(g.Key.Year, g.Key.Month, 1),
+                    TotalProfit = g.Sum(x => x.Profit)
+                })
+                .OrderBy(x => x.Period);
+
+            return monthlyProfits;
+        }
     }
 }

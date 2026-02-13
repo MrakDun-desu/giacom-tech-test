@@ -16,5 +16,7 @@ namespace Order.Data
         Task<bool> OrderExistsAsync(Guid orderId);
 
         Task<OrderDetail> CreateOrderAsync(OrderCreateRequest request);
+
+        Task<IEnumerable<ProfitSummary>> GetProfitSummary();
     }
 }

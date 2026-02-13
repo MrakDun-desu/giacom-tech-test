@@ -41,5 +41,10 @@ namespace Order.Service
         {
             return await _orderRepository.CreateOrderAsync(createRequest);
         }
+
+        public async Task<IEnumerable<ProfitSummary>> GetProfitSummary()
+        {
+            return await _orderRepository.GetProfitSummary();
+        }
     }
 }
