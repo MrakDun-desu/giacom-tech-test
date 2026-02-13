@@ -18,9 +18,9 @@ namespace Order.Service.Tests
         private OrderContext _orderContext;
         private DbConnection _connection;
 
-        private readonly byte[] _orderStatusCreatedId = Guid.NewGuid().ToByteArray();
-        private readonly byte[] _orderServiceEmailId = Guid.NewGuid().ToByteArray();
-        private readonly byte[] _orderProductEmailId = Guid.NewGuid().ToByteArray();
+        private readonly Guid _orderStatusCreatedId = Guid.NewGuid();
+        private readonly Guid _orderServiceEmailId = Guid.NewGuid();
+        private readonly Guid _orderProductEmailId = Guid.NewGuid();
 
 
         [SetUp]
@@ -156,20 +156,19 @@ namespace Order.Service.Tests
 
         private async Task AddOrder(Guid orderId, int quantity)
         {
-            var orderIdBytes = orderId.ToByteArray();
             _orderContext.Order.Add(new Data.Entities.Order
             {
-                Id = orderIdBytes,
-                ResellerId = Guid.NewGuid().ToByteArray(),
-                CustomerId = Guid.NewGuid().ToByteArray(),
+                Id = orderId,
+                ResellerId = Guid.NewGuid(),
+                CustomerId = Guid.NewGuid(),
                 CreatedDate = DateTime.Now,
                 StatusId = _orderStatusCreatedId,
             });
 
             _orderContext.OrderItem.Add(new OrderItem
             {
-                Id = Guid.NewGuid().ToByteArray(),
-                OrderId = orderIdBytes,
+                Id = Guid.NewGuid(),
+                OrderId = orderId,
                 ServiceId = _orderServiceEmailId,
                 ProductId = _orderProductEmailId,
                 Quantity = quantity
